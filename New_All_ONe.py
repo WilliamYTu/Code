@@ -783,8 +783,8 @@ def trip_2():
     StraightPID_right(0, 7, 30)
 
     #Collect water units
-    Turn(62)
-    StraightPID_right(62, 27, 35)
+    Turn(70)
+    StraightPID_right(70, 27, 35)
 
     Turn(83)
     StraightPID_right(83, 33, 35)
@@ -800,7 +800,7 @@ def trip_2():
 
     # Turn to collect units
     Turn_r(22)
-    StraightPID_right(22, 12.5, 35)
+    StraightPID_right(22, 13.5, 35)
     Turn_r(-47)
     StraightPID_right(-47, 62, 55)
     StraightPID_right(-47, -15.5, 35)
