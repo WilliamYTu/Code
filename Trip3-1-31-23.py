@@ -1,6 +1,5 @@
-# LEGO type:standard slot:1 autostart
+# LEGO type:standard slot:5 autostart
 
-# New idea to combine Trip 2 and Trip 3
 from spike import PrimeHub, LightMatrix, Button, StatusLight, ForceSensor, MotionSensor, Speaker, ColorSensor, App, DistanceSensor, Motor, MotorPair
 from spike.control import wait_for_seconds, wait_until, Timer
 import math
@@ -766,46 +765,39 @@ def trip_1():
     
 def trip_2():
     # Toy factory
-    StraightPID_right(0, -57, 40)
-    wait_for_seconds(0.5)
-    StraightPID_double(0, 1, 35)
-    StraightPID_right(0, 20, 35)
-    Turn(135) 
-    StraightPID_right(135, 45, 35)
-    # Find black line and get ready do Hand
-    Run2line('Left', 30, 'Forward', 'black')
-    wait_for_seconds(0.3)
-    #Linesquaring('White', 50, 5, 'Forward')
+    StraightPID_right(0, -45, 40)
     #wait_for_seconds(0.3)
     MotionSensor.reset_yaw_angle()
-    #wait_for_seconds(0.3)
+    StraightPID_double(0, 1, 35)
+    StraightPID_right(0, 21, 35)
+    Turn(136)
+    Turn(136)
+    StraightPID_right(136, 50, 35)
+    # Find black line and get ready to collect water units
+    Run2line('Right', 30, 'Forward', 'black')
+    Linesquaring('White', 50, 5, 'Forward')
     
-    StraightPID_right(0, 7, 30)
+    MotionSensor.reset_yaw_angle()
+    wait_for_seconds(0.5)
+    
+    #StraightPID_right(0, 3, 30) 
 
     #Collect water units
-    Turn(70)
-    StraightPID_right(70, 27, 35)
+    Turn(55)
+    Turn(55)
+    StraightPID_right(55, 28, 35)
+    Turn(82)
+    StraightPID_right(82, 31.5, 35)
 
-    Turn(83)
-    StraightPID_right(83, 33, 35)
-    # Turn(90)
-    # StraightPID_right(90, 41, 35)
-    # #StraightPID_double(90, 10, 35)
-    # # #wait_for_seconds(0.3)
-    # StraightPID_right(90, -36, 35)
-    # Turn(58)
-    # StraightPID_right(58, 14, 35)
-    # Turn(78)
-    # StraightPID_right(78, 34, 35)
 
-    # Turn to collect units
-    Turn_r(22)
-    StraightPID_right(22, 13.5, 35)
-    Turn_r(-47)
-    StraightPID_right(-47, 62, 55)
-    StraightPID_right(-47, -15.5, 35)
-    Turn_l(-115)
-    StraightPID_right(-115, 12, 35)
+    Turn_r(21)
+    StraightPID_right(21, 14, 35)
+    Turn_r(-55)
+    Turn_r(-49)
+    StraightPID_right(-49, 61, 55)
+    StraightPID_right(-52, -17, 35)
+    Turn_l(-110)
+    StraightPID_right(-110, 12, 35)
     Turn(-45)
     StraightPID_right(-45, 40, 50)
 
@@ -825,10 +817,9 @@ def trip_3():
         #wait_for_seconds(0.2)
         StraightPID_double(hitangle, -3, 30, slow_stop=0)
         #wait_for_seconds(0.2)
-
-    StraightPID_right(hitangle+10, -80, 40)
-    # StraightPID_right(hitangle+5, -35, 40)
-    # StraightPID_right(0, -50, 50)
+    StraightPID_double(hitangle, -8, 40)
+    Turn(35)
+    StraightPID_double(35, -20, 30)
 
 """ def trip_4():
     # Water reservoir
@@ -892,26 +883,10 @@ def trip_4():
    
     StraightPID_left(-115, -40, 70)
 
-# wait()
-# initialize()
-# trip_inprogress()
-# trip_1()
-# done()  
 
-# wait()
+wait()
 initialize()
 trip_inprogress()
 trip_2()
 done()  
-
-# wait()
-# initialize()
-# trip_inprogress()
-# trip_3()
-# done()  
-
-# wait()
-# initialize()
-# trip_inprogress()
-# trip_4()
-# done()      
+  

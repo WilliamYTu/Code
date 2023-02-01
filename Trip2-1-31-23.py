@@ -1,4 +1,4 @@
-# LEGO type:standard slot:16 autostart
+# LEGO type:standard slot:5 autostart
 
 from spike import PrimeHub, LightMatrix, Button, StatusLight, ForceSensor, MotionSensor, Speaker, ColorSensor, App, DistanceSensor, Motor, MotorPair
 from spike.control import wait_for_seconds, wait_until, Timer
@@ -44,9 +44,14 @@ def wait():
     '''
     wait for left button is pressed
     '''
-    hub.light_matrix.show_image('HAPPY')
+    hub.light_matrix.show_image('TRIANGLE_LEFT')
     Hub.left_button.wait_until_pressed()
 
+def done():
+    '''
+    Trip is done, show happy face
+    '''
+    hub.light_matrix.show_image('HAPPY')
 
 def trip_inprogress():
     hub.light_matrix.show_image('DIAMOND')
@@ -371,7 +376,7 @@ def StraightPID_double(degree_abs, dist, speed, slow_stop=1, Kp=1, Ki=0.05, Kd=0
     motor_pair.stop()
     motor_pair = MotorPair(LeftMotorSym, RightMotorSym)
 
-def TurningPID_abs(degree_abs, Kp=2, Ki=0.01, Kd=5, MinPower=20, MaxPower=35):
+def TurningPID_abs(degree_abs, Kp=2, Ki=0.01, Kd=5, MinPower=25, MaxPower=35):
     '''
     Turning with PID using power
 
@@ -429,7 +434,7 @@ def Turn(degree):
     wait_for_seconds(0.3)
     TurningPID_abs(degree)
 
-def TurningPID_l(degree_abs, Kp=2, Ki=0.01, Kd=5, MinPower=20, MaxPower=35):
+def TurningPID_l(degree_abs, Kp=2, Ki=0.01, Kd=5, MinPower=25, MaxPower=45):
     global a_Error, Pre_Error, motor_pair
     RightMotor.set_stop_action("brake")
     RightMotor.stop()
@@ -478,7 +483,7 @@ def Turn_l(degree):
     wait_for_seconds(0.3)
     TurningPID_l(degree)
 
-def TurningPID_r(degree_abs, Kp=2, Ki=0.01, Kd=5, MinPower=20, MaxPower=35):
+def TurningPID_r(degree_abs, Kp=2, Ki=0.01, Kd=5, MinPower=25, MaxPower=45):
     global a_Error, Pre_Error, motor_pair
     LeftMotor.set_stop_action("brake")
     LeftMotor.stop()
@@ -525,10 +530,10 @@ def TurningPID_r(degree_abs, Kp=2, Ki=0.01, Kd=5, MinPower=20, MaxPower=35):
 def Turn_r(degree):
     TurningPID_r(degree)
     wait_for_seconds(0.3)
-    print(MotionSensor.get_yaw_angle())
+    #print(MotionSensor.get_yaw_angle())
     TurningPID_r(degree)
-    wait_for_seconds(0.3)
-    print(MotionSensor.get_yaw_angle())
+    #wait_for_seconds(0.3)
+    #print(MotionSensor.get_yaw_angle())
     
 def Run2line(whichcolorsensor='Right', speed=30, direction='Forward', line_color='black'):
     '''
@@ -564,31 +569,324 @@ def Run2line(whichcolorsensor='Right', speed=30, direction='Forward', line_color
 
     motor_pair = MotorPair(LeftMotorSym, RightMotorSym)
 
-def trip_6():
-    #Navivagting to Hydroelectric Dam
-    StraightPID_right(0, 75, 30)
-    Run2line("Right", 30, "Forward", "black")
-    Turn(-90)
-    wait_for_seconds(0.5)
-    StraightPID_right(-90, 23, 30)
-    Turn(137)
+def Linesquaring(targetcolor='Black', targetintensity=50, int_range=5, direction='Forward'):
+    '''
+    Use both Color Sensors and Gyro Sensors to squre an edge towards
+    "targetcolor", either from White to Black or Black to White with PID,
+    in other words, adjustment is proportional to the light reading delta
+    Here is the flow of the code:
+    1) robot will start moving forward/backward defined by "direction"
+    2) Coarse Tuning is performed by making both sensor land on the black
+       or white line so that roughly perpendicular to the line
+    3) Fine Turning is performed with both color sensors to reach
+       "targetintensity" within the margin of error "int_range"
+    Measured WHITE and BLACK light intensity on the mat
+
+    Parameters
+    targetcolor: defines color starting squaring
+        'White' - white color
+        Others  - black color, Default
+    targetintensity: defines color intensity target
+        Default: 30
+    int_range: margin of error of color intensity
+        Default: 5
+    direction: direction of movement
+        'Backward' - move backward
+        Others     - move forward, Default
+
+    '''
+    Left_motor_status = 1
+    Right_motor_status = 1
+    Left_int = 0
+    Right_int = 0
+    Kp = 0.25
+    if direction == 'Backward':
+        motor_pair = MotorPair(RightMotorSym, LeftMotorSym)
+        LeftColor = ColorSensor(RightColorSym)
+        RightColor = ColorSensor(LeftColorSym)
+    else :
+        motor_pair = MotorPair(LeftMotorSym, RightMotorSym)
+        LeftColor = ColorSensor(LeftColorSym)
+        RightColor = ColorSensor(RightColorSym)
+
+    motor_pair.set_stop_action('hold')
+    motor_pair.start_tank(20, 20)
+
+    Min = targetintensity - int_range
+    Max = targetintensity + int_range
+    if targetcolor == 'White':
+        while True:
+            Left_color = LeftColor.get_color()
+            Right_color = RightColor.get_color()
+            if Left_color == 'black' and Right_color == 'black':
+                motor_pair.stop()
+                break
+            elif Left_color == 'black':
+                Left_motor_status = 0
+                if Right_motor_status == 0:
+                    motor_pair.stop()
+                    break
+                else:
+                    motor_pair.start_tank(-3, 15)
+            elif Right_color == 'black':
+                Right_motor_status = 0
+                if Left_motor_status == 0:
+                    motor_pair.stop()
+                    break
+                else:
+                    motor_pair.start_tank(15, -3)
+
+        # Fine Tuning
+        Left_motor_status = 1
+        Right_motor_status = 1
+
+        while True:
+            Left_int = 100 * (LeftColor. get_reflected_light() - BLACK) / (WHITE - BLACK)
+            Right_int = 100 * (RightColor. get_reflected_light() - BLACK) / (WHITE - BLACK)
+            # Adjustment proportional to the intensity delta for each wheel,
+            # and prevent it to be too small
+            Lspeed = min(max(math.floor(abs(Left_int - targetintensity) * Kp), 10), 25)
+            Rspeed = min(max(math.floor(abs(Right_int - targetintensity) *Kp), 10), 25)
+            if Min <= Left_int <= Max and Min <= Right_int <= Max:
+                motor_pair.stop()
+                break
+            elif Min <= Left_int <= Max:
+                Left_motor_status = 0
+                if Right_motor_status == 0:
+                    motor_pair.stop()
+                    break
+            elif Min <= Right_int <= Max:
+                Right_motor_status = 0
+                if Left_motor_status == 0:
+                    motor_pair.stop()
+                    break
+            elif Left_int < Min and Right_int > Max:
+                motor_pair.start_tank(Lspeed, -Rspeed)
+            elif Left_int > Max and Right_int < Min:
+                motor_pair.start_tank(-Lspeed, Rspeed)
+            elif Left_int < Min and Right_int < Min:
+                motor_pair.start_tank(Lspeed, Rspeed)
+            elif Left_int > Max and Right_int > Max:
+                motor_pair.start_tank(-Lspeed, -Rspeed)
+    """ else:
+        while True:
+            Left_color = LeftColor.get_color()
+            Right_color = RightColor.get_color()
+            if Left_color == 'white' and Right_color == 'white':
+                motor_pair.stop()
+                break
+            elif Left_color == 'white':
+                Left_motor_status = 0
+                if Right_motor_status == 0:
+                    motor_pair.stop()
+                    break
+                else:
+                    motor_pair.start_tank(-3, 15)
+            elif Right_color == 'white':
+                Right_motor_status = 0
+                if Left_motor_status == 0:
+                    motor_pair.stop()
+                    break
+                else:
+                    motor_pair.start_tank(15, -3)
+
+        # Fine Tuning
+        Left_motor_status = 1
+        Right_motor_status = 1
+        while True:
+            Left_int = 100 * (LeftColor. get_reflected_light() - BLACK) / (WHITE - BLACK)
+            Right_int = 100 * (RightColor. get_reflected_light() - BLACK) / (WHITE - BLACK)
+            # Adjustment proportional to the intensity delta for each wheel,
+            # and prevent it to be too small
+            Lspeed = min(max(math.floor(abs(Left_int - targetintensity) * Kp), 10), 25)
+            Rspeed = min(max(math.floor(abs(Right_int - targetintensity) *Kp), 10), 25)
+            if Min <= Left_int <= Max and Min <= Right_int <= Max:
+                motor_pair.stop()
+                break
+            elif Min <= Left_int <= Max:
+                Left_motor_status = 0
+                if Right_motor_status == 0:
+                    motor_pair.stop()
+                    break
+            elif Min <= Right_int <= Max:
+                Right_motor_status = 0
+                if Left_motor_status == 0:
+                    motor_pair.stop()
+                    break
+            elif Left_int < Min and Right_int > Max:
+                motor_pair.start_tank(-Lspeed, Rspeed)
+            elif Left_int > Max and Right_int < Min:
+                motor_pair.start_tank(Lspeed, -Rspeed)
+            elif Left_int < Min and Right_int < Min:
+                motor_pair.start_tank(-Lspeed, -Rspeed)
+            elif Left_int > Max and Right_int > Max:
+                motor_pair.start_tank(Lspeed, Rspeed) """
+
+    motor_pair = MotorPair(LeftMotorSym, RightMotorSym)
+
+
+def trip_1():
+    #Push the television and go back
+    # motor_pair.move_tank(2.5, "seconds", 30, 30)
+    # motor_pair.move_tank(5, "cm", -30, -30)
+    StraightPID_right(0, 31, 35)
+
+    #Navigate to windmill
+    Turn(-45)
+    StraightPID_double(-45, 39, 40)
+    Turn(45)
+
+    #Windmill mission
+    i = 1
+    while i<4:
+        #motor_pair.move_tank(25, "cm", 60, 60)
+        if (i==1):
+            StraightPID_double(45, 8, 50, slow_stop=0)
+        else:
+            StraightPID_double(45, 6, 50, slow_stop=0)
+        wait_for_seconds(0.3)
+        StraightPID_double(45, -5, 40)
+        #wait_for_seconds(0.3)
+        i = i+1
+
+    #Navigating to Hybrid Car & doing Rechargable Battery
+    motor_pair.move_tank(1, "seconds", -45, -45)
+    StraightPID_double(45, 1.5, 35)
+    
+    Turn(-45)
+    StraightPID_right(-45, 32, 40) 
+    # Turn(-47)
+    # StraightPID_right(-47, 20, 40) 
+    # Turn(-40)
+    # StraightPID_right(-40, 12, 30)
+    RightArm.run_for_degrees(-250, 85)
+    #wait_for_seconds(0.5)
+    StraightPID_left(-40, -100, 70)   
+    
+def trip_2():
+    # Toy factory
+    StraightPID_right(0, -45, 40)
+    #wait_for_seconds(0.3)
+    MotionSensor.reset_yaw_angle()
+    StraightPID_double(0, 1, 35)
+    StraightPID_right(0, 21, 35)
+    Turn(136)
+    Turn(136)
+    StraightPID_right(136, 50, 35)
+    # Find black line and get ready to collect water units
+    Run2line('Right', 30, 'Forward', 'black')
+    Linesquaring('White', 50, 5, 'Forward')
+    
+    MotionSensor.reset_yaw_angle()
     wait_for_seconds(0.5)
     
-    #Hydroelectric Dam
-    motor_pair.move_tank(2, "seconds", 15, 15)
-    wait_for_seconds(0.3)
+    #StraightPID_right(0, 3, 30) 
+
+    #Collect water units
+    Turn(55)
+    Turn(55)
+    StraightPID_right(55, 28, 35)
+    Turn(82)
+    StraightPID_right(82, 31.5, 35)
+
+
+    Turn_r(21)
+    StraightPID_right(21, 14, 35)
+    Turn_r(-55)
+    Turn_r(-49)
+    StraightPID_right(-49, 61, 55)
+    StraightPID_right(-52, -17, 35)
+    Turn_l(-110)
+    StraightPID_right(-110, 12, 35)
+    Turn(-45)
+    StraightPID_right(-45, 40, 50)
+
+   
+def trip_3():
+    hitangle = -15
     
-    #Back to Base 
-    StraightPID_right(142, -20, 35)
-    TurningPID_l(90)
-    StraightPID_right(90, 33, 40)
-    TurningPID_l(180)
-    StraightPID_left(180, 70, 80)
+    StraightPID_double(0, 55, 35)
+    Turn(hitangle)
+    
+    StraightPID_left(hitangle, 25, 40, slow_stop=0)
+    #wait_for_seconds(0.2)
+    StraightPID_double(hitangle, -3, 30)
+    #wait_for_seconds(0.2)
+    for i in range(2):
+        StraightPID_left(hitangle, 4, 50, slow_stop=0)
+        #wait_for_seconds(0.2)
+        StraightPID_double(hitangle, -3, 30, slow_stop=0)
+        #wait_for_seconds(0.2)
+    StraightPID_double(hitangle, -8, 40)
+    Turn(35)
+    StraightPID_double(35, -20, 30)
+
+""" def trip_4():
+    # Water reservoir
+    
+    # reverse and push innovation project
+    StraightPID_right(0, -10, 30)
+    Turn_l(-16)
+    StraightPID_right(-16, -16, 30)
+    Turn_l(-26)
+    StraightPID_right(-26, -14, 30)
+    Turn_l(-48)
+    StraightPID_right(-48, -41, 30)
+    
+    # approach to water reservoir
+    Turn_l(-20)
+    StraightPID_right(-20, 6, 30)
+    
+    Turn_r(-30)
+    StraightPID_right(-30, 10, 30)
+    #motor_pair.move_tank(2, "seconds", 15, 15)
+    #wait_for_seconds(0.5)
+    
+    
+    StraightPID_right(-20, -20, 30)
+    Turn_r(-92)
+    StraightPID_right(-92, 25, 30)
+   
+    #StraightPID_right(-92, -1, 30)
+    
+    #Turn(-98)
+   
+    StraightPID_left(-100, -40, 70) """
+    
+def trip_4():
+    # Water reservoir
+    
+    # reverse and push innovation project
+    StraightPID_right(0, -35, 35)
+    Turn_l(-30)
+    StraightPID_right(-30, -30, 35)
+    Turn_l(-75)
+    StraightPID_right(-75, -17, 35)
+    
+    # # approach to water reservoir
+    Turn_l(-22)
+    StraightPID_right(-22, 19, 30)
+    
+    # Turn_r(-30)
+    # StraightPID_right(-30, 6, 30)
+    # #motor_pair.move_tank(2, "seconds", 15, 15)
+    # #wait_for_seconds(0.5)
+    
+    
+    StraightPID_right(-20, -24, 35)
+    Turn_r(-92)
+    StraightPID_right(-92, 23, 40)
+   
+    #StraightPID_right(-92, -1, 30)
+    
+    #Turn(-98)
+   
+    StraightPID_left(-115, -40, 70)
+
 
 wait()
 initialize()
-trip_6()
-
-
-
-
+trip_inprogress()
+trip_2()
+done()  
+  
