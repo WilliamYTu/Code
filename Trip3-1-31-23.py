@@ -802,9 +802,10 @@ def trip_2():
     StraightPID_right(-45, 40, 50)
 
    
+
 def trip_3():
     hitangle = -15
-    
+
     StraightPID_double(0, 55, 35)
     Turn(hitangle)
     
@@ -817,9 +818,11 @@ def trip_3():
         #wait_for_seconds(0.2)
         StraightPID_double(hitangle, -3, 30, slow_stop=0)
         #wait_for_seconds(0.2)
-    StraightPID_double(hitangle, -8, 40)
-    Turn(35)
-    StraightPID_double(35, -20, 30)
+
+    StraightPID_right(hitangle+10, -40, 40)
+    # StraightPID_right(hitangle+5, -35, 40)
+    # StraightPID_right(0, -50, 50)
+
 
 """ def trip_4():
     # Water reservoir
@@ -887,6 +890,6 @@ def trip_4():
 wait()
 initialize()
 trip_inprogress()
-trip_2()
+trip_3()
 done()  
   
