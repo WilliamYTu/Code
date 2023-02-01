@@ -809,17 +809,17 @@ def trip_3():
     StraightPID_double(0, 55, 35)
     Turn(hitangle)
     
-    StraightPID_left(hitangle, 25, 40, slow_stop=0)
+    StraightPID_left(hitangle, 28, 40, slow_stop=0)
     #wait_for_seconds(0.2)
-    StraightPID_double(hitangle, -3, 30)
+    StraightPID_double(hitangle, -7, 30)
     #wait_for_seconds(0.2)
     for i in range(2):
-        StraightPID_left(hitangle, 4, 50, slow_stop=0)
+        StraightPID_left(hitangle, 6, 50, slow_stop=0)
         #wait_for_seconds(0.2)
-        StraightPID_double(hitangle, -3, 30, slow_stop=0)
+        StraightPID_double(hitangle, -7, 30, slow_stop=0)
         #wait_for_seconds(0.2)
 
-    StraightPID_right(hitangle+10, -40, 40)
+    StraightPID_right(hitangle+5, -50, 40)
     # StraightPID_right(hitangle+5, -35, 40)
     # StraightPID_right(0, -50, 50)
 
