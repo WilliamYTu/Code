@@ -1,4 +1,4 @@
-# LEGO type:standard slot:6 autostart
+# LEGO type:standard slot:7 autostart
 
 from spike import PrimeHub, LightMatrix, Button, StatusLight, ForceSensor, MotionSensor, Speaker, ColorSensor, App, DistanceSensor, Motor, MotorPair
 from spike.control import wait_for_seconds, wait_until, Timer
@@ -886,11 +886,17 @@ def trip_4():
     #Turn(-98)
    
     StraightPID_left(-115, -40, 70)
+def trip_5():
+    StraightPID_left(0, 80, 50)
+    Turn(45)
+    StraightPID_left(45, 90, 50)
+    Turn(-45)
+    #StraightPID_left(-45, 2, 30)
 
 
 wait()
 initialize()
 trip_inprogress()
-trip_3()
+trip_5()
 done()  
   
