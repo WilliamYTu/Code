@@ -1,4 +1,4 @@
-# LEGO type:standard slot:7 autostart
+# LEGO type:standard slot:8 autostart
 
 from spike import PrimeHub, LightMatrix, Button, StatusLight, ForceSensor, MotionSensor, Speaker, ColorSensor, App, DistanceSensor, Motor, MotorPair
 from spike.control import wait_for_seconds, wait_until, Timer
@@ -805,22 +805,26 @@ def trip_2():
 
 def trip_3():
     hitangle = -15
-
+    
     StraightPID_double(0, 57, 35)
     Turn(hitangle)
     
-    StraightPID_left(hitangle, 28, 40, slow_stop=0)
+    StraightPID_left(hitangle, 25, 45, slow_stop=0)
     #wait_for_seconds(0.2)
     StraightPID_double(hitangle, -3, 30)
     #wait_for_seconds(0.2)
-    for i in range(3):
-        StraightPID_left(hitangle, 4, 50, slow_stop=0)
+    for i in range(2):
+        StraightPID_left(hitangle, 6, 50, slow_stop=0)
         #wait_for_seconds(0.2)
-        StraightPID_double(hitangle, -3, 30, slow_stop=0)
+        StraightPID_double(hitangle, -4, 30, slow_stop=0)
         #wait_for_seconds(0.2)
-        #Turn(hitangle)
-
-    StraightPID_right(hitangle+10, -75, 40)
+    StraightPID_double(hitangle, -10, 30)
+    Turn(hitangle+48)
+    StraightPID_left(hitangle+48, -23, 40)
+    Turn_r(hitangle+30)
+    StraightPID_right(hitangle, -50, 40)
+    # StraightPID_right(hitangle+5, -35, 40)
+    # StraightPID_right(0, -50, 50)
     # StraightPID_right(hitangle+5, -35, 40)
     # StraightPID_right(0, -50, 50)
 
@@ -884,19 +888,21 @@ def trip_5():
     Turn(45)
     StraightPID_left(45, 90, 50)
     Turn(-45)
+    StraightPID_left(-45, 3, 20)
+
     #StraightPID_left(-45, 2, 30)
 
-wait()
-initialize()
-trip_inprogress()
-trip_3()
-done()
+# wait()
+# initialize()
+# trip_inprogress()
+# trip_3()
+# done()
 
-wait()
-initialize()
-trip_inprogress()
-trip_4()
-done()  
+# wait()
+# initialize()
+# trip_inprogress()
+# trip_4()
+# done()  
 
 wait()
 initialize()
