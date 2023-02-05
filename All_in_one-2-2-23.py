@@ -801,14 +801,12 @@ def trip_2():
     Turn(-45)
     StraightPID_right(-45, 40, 50)
 
-   
 
 def trip_3():
     hitangle = -15
     
     StraightPID_double(0, 57, 35)
     Turn(hitangle)
-    
     StraightPID_left(hitangle, 25, 45, slow_stop=0)
     #wait_for_seconds(0.2)
     StraightPID_double(hitangle, -3, 30)
@@ -819,10 +817,12 @@ def trip_3():
         StraightPID_double(hitangle, -4, 30, slow_stop=0)
         #wait_for_seconds(0.2)
     StraightPID_double(hitangle, -10, 30)
-    Turn(hitangle+48)
-    StraightPID_left(hitangle+48, -23, 40)
-    Turn_r(hitangle+30)
-    StraightPID_right(hitangle, -50, 40)
+    StraightPID_double(0, -40, 40)
+    # Turn(hitangle+48)
+    # StraightPID_left(hitangle+48, -23, 40)
+    # Turn_r(hitangle)
+    # StraightPID_double(hitangle, -50, 100)
+    # StraightPID_right(hitangle, -50, 100)
     # StraightPID_right(hitangle+5, -35, 40)
     # StraightPID_right(0, -50, 50)
     # StraightPID_right(hitangle+5, -35, 40)
@@ -892,21 +892,13 @@ def trip_5():
 
     #StraightPID_left(-45, 2, 30)
 
-wait()
-initialize()
-trip_inprogress()
-trip_3()
-done()
+
 
 wait()
 initialize()
 trip_inprogress()
-trip_4()
+trip_2()
 done()  
 
-wait()
-initialize()
-trip_inprogress()
-trip_5()
-done()  
+
   
